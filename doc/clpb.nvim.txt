@@ -1,0 +1,49 @@
+*clpb.nvim.txt*
+
+==============================================================================
+Lua module: clpb                                              *clpb.nvim-clpb*
+
+yank({event})                                                    *clpb.yank()*
+  Save yanked text to history. Call inside |TextYankPost| autocmd.
+
+  Parameters: ~
+    {event} ({regcontents) string[], regtype: string}?
+
+paste()                                                         *clpb.paste()*
+  Paste the current history item after cursor.
+
+prev()                                                           *clpb.prev()*
+  Replace last paste with the previous history item.
+
+next()                                                           *clpb.next()*
+  Replace last paste with the next history item.
+
+list()                                                           *clpb.list()*
+  Return the yank history.
+
+  Return: ~
+    (ClpbItem[]) 
+
+==============================================================================
+EXAMPLES                                                  *clpb.nvim-EXAMPLES*
+
+>lua
+  vim.api.nvim_create_autocmd("TextYankPost", {
+    callback = function()
+      require("clpb").yank(vim.v.event)
+    end,
+  })
+
+  vim.keymap.set("n", "p", function()
+    require("clpb").paste()
+  end)
+  vim.keymap.set("n", "<C-p>", function()
+    require("clpb").prev()
+  end)
+  vim.keymap.set("n", "<C-n>", function()
+    require("clpb").next()
+  end)
+<
+
+==============================================================================
+vim:tw=78:ts=8:ft=help
