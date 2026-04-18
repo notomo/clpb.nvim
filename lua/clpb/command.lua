@@ -88,7 +88,7 @@ function M.next()
 end
 
 function M.list()
-  return vim.deepcopy(history)
+  return vim.deepcopy(vim.iter(history):rev():totable())
 end
 
 return M
