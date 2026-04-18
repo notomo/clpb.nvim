@@ -210,6 +210,7 @@ describe("clpb.paste() register and highlight", function()
     vim.fn.setreg("+", { "hello" }, "v")
     clpb.paste()
 
+    vim.wait(0)
     vim.api.nvim_exec_autocmds("CursorMoved", { buffer = 0 })
 
     local ns_id = vim.api.nvim_get_namespaces()["clpb"]

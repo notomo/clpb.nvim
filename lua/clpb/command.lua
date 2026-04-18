@@ -55,7 +55,7 @@ function M.paste()
   -- Use + register to support content copied from external applications
   local lines = vim.fn.getreg("+", 1, true)
   local regtype = vim.fn.getregtype("+")
-  vim.api.nvim_put(lines, put_type(regtype), true, true)
+  vim.api.nvim_put(lines, put_type(regtype), true, false)
   set_highlight(bufnr)
   pasted = true
 end
@@ -72,7 +72,7 @@ function M.prev()
   cursor = cursor - 1
   local item = history[cursor]
   local bufnr = vim.api.nvim_get_current_buf()
-  vim.api.nvim_put(item.lines, put_type(item.regtype), true, true)
+  vim.api.nvim_put(item.lines, put_type(item.regtype), true, false)
   set_highlight(bufnr)
   pasted = true
 end
@@ -89,7 +89,7 @@ function M.next()
   cursor = cursor + 1
   local item = history[cursor]
   local bufnr = vim.api.nvim_get_current_buf()
-  vim.api.nvim_put(item.lines, put_type(item.regtype), true, true)
+  vim.api.nvim_put(item.lines, put_type(item.regtype), true, false)
   set_highlight(bufnr)
   pasted = true
 end
