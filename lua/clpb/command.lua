@@ -17,19 +17,23 @@ end
 local function set_highlight(bufnr)
   local start_pos = vim.fn.getpos("'[")
   local end_pos = vim.fn.getpos("']")
+  local group = vim.api.nvim_create_augroup("clpb", {})
   vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
   vim.api.nvim_buf_set_extmark(bufnr, ns, start_pos[2] - 1, start_pos[3] - 1, {
     end_row = end_pos[2] - 1,
     end_col = end_pos[3],
-    hl_group = "IncSearch",
+    hl_group = "ClpbPasted",
   })
-  vim.api.nvim_create_autocmd("CursorMoved", {
-    buffer = bufnr,
-    once = true,
-    callback = function()
-      vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
-    end,
-  })
+  vim.schedule(function()
+    vim.api.nvim_create_autocmd("CursorMoved", {
+      group = group,
+      buffer = bufnr,
+      once = true,
+      callback = function()
+        vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+      end,
+    })
+  end)
 end
 
 function M.yank(event)
