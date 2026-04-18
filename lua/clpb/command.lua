@@ -48,7 +48,10 @@ function M.paste()
     return
   end
   local bufnr = vim.api.nvim_get_current_buf()
-  vim.cmd('normal! "+p')
+  -- Use + register to support content copied from external applications
+  local lines = vim.fn.getreg("+", 1, true)
+  local regtype = vim.fn.getregtype("+")
+  vim.api.nvim_put(lines, put_type(regtype), true, true)
   set_highlight(bufnr)
   pasted = true
 end
