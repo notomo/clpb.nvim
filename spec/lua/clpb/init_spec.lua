@@ -56,6 +56,7 @@ describe("clpb.paste()", function()
 
   it("inserts charwise yanked text into buffer", function()
     clpb.yank({ regcontents = { "hello" }, regtype = "v" })
+    vim.fn.setreg("+", { "hello" }, "v")
 
     clpb.paste()
 
@@ -65,6 +66,7 @@ describe("clpb.paste()", function()
 
   it("inserts linewise yanked text as a new line", function()
     clpb.yank({ regcontents = { "hello" }, regtype = "V" })
+    vim.fn.setreg("+", { "hello" }, "V")
 
     clpb.paste()
 
@@ -75,6 +77,7 @@ describe("clpb.paste()", function()
   it("pastes the latest yank when multiple yanks exist", function()
     clpb.yank({ regcontents = { "first" }, regtype = "v" })
     clpb.yank({ regcontents = { "second" }, regtype = "v" })
+    vim.fn.setreg("+", { "second" }, "v")
 
     clpb.paste()
 
@@ -96,6 +99,7 @@ describe("clpb.prev()", function()
 
   it("does nothing when already at the oldest item", function()
     clpb.yank({ regcontents = { "only" }, regtype = "v" })
+    vim.fn.setreg("+", { "only" }, "v")
     clpb.paste()
 
     clpb.prev()
@@ -107,6 +111,7 @@ describe("clpb.prev()", function()
   it("replaces pasted text with previous history item", function()
     clpb.yank({ regcontents = { "first" }, regtype = "v" })
     clpb.yank({ regcontents = { "second" }, regtype = "v" })
+    vim.fn.setreg("+", { "second" }, "v")
     clpb.paste()
 
     clpb.prev()
@@ -139,6 +144,7 @@ describe("clpb.next()", function()
 
   it("does nothing when already at the newest item", function()
     clpb.yank({ regcontents = { "only" }, regtype = "v" })
+    vim.fn.setreg("+", { "only" }, "v")
     clpb.paste()
 
     clpb.next()
@@ -150,6 +156,7 @@ describe("clpb.next()", function()
   it("replaces pasted text with next history item after prev", function()
     clpb.yank({ regcontents = { "first" }, regtype = "v" })
     clpb.yank({ regcontents = { "second" }, regtype = "v" })
+    vim.fn.setreg("+", { "second" }, "v")
     clpb.paste()
     clpb.prev()
 
@@ -157,5 +164,83 @@ describe("clpb.next()", function()
 
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
     assert.same({ "second" }, lines)
+  end)
+end)
+
+describe("clpb.paste() register and highlight", function()
+  before_each(helper.before_each)
+  after_each(helper.after_each)
+
+  it("pastes external content from + register without overwriting it", function()
+    clpb.yank({ regcontents = { "from_neovim" }, regtype = "v" })
+    vim.fn.setreg("+", { "external" }, "v")
+
+    clpb.paste()
+
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    assert.same({ "external" }, lines)
+    assert.equal("external", vim.fn.getreg("+"))
+  end)
+
+  it("prev does not overwrite + register", function()
+    clpb.yank({ regcontents = { "first" }, regtype = "v" })
+    clpb.yank({ regcontents = { "second" }, regtype = "v" })
+    vim.fn.setreg("+", { "second" }, "v")
+    clpb.paste()
+    vim.fn.setreg("+", { "external" }, "v")
+
+    clpb.prev()
+
+    assert.equal("external", vim.fn.getreg("+"))
+  end)
+
+  it("sets extmark highlight after paste", function()
+    clpb.yank({ regcontents = { "hello" }, regtype = "v" })
+    vim.fn.setreg("+", { "hello" }, "v")
+
+    clpb.paste()
+
+    local ns_id = vim.api.nvim_get_namespaces()["clpb"]
+    local marks = vim.api.nvim_buf_get_extmarks(0, ns_id, 0, -1, {})
+    assert.equal(1, #marks)
+  end)
+
+  it("clears highlight on CursorMoved", function()
+    clpb.yank({ regcontents = { "hello" }, regtype = "v" })
+    vim.fn.setreg("+", { "hello" }, "v")
+    clpb.paste()
+
+    vim.api.nvim_exec_autocmds("CursorMoved", { buffer = 0 })
+
+    local ns_id = vim.api.nvim_get_namespaces()["clpb"]
+    local marks = vim.api.nvim_buf_get_extmarks(0, ns_id, 0, -1, {})
+    assert.same({}, marks)
+  end)
+
+  it("sets extmark highlight after prev", function()
+    clpb.yank({ regcontents = { "first" }, regtype = "v" })
+    clpb.yank({ regcontents = { "second" }, regtype = "v" })
+    vim.fn.setreg("+", { "second" }, "v")
+    clpb.paste()
+
+    clpb.prev()
+
+    local ns_id = vim.api.nvim_get_namespaces()["clpb"]
+    local marks = vim.api.nvim_buf_get_extmarks(0, ns_id, 0, -1, {})
+    assert.equal(1, #marks)
+  end)
+
+  it("sets extmark highlight after next", function()
+    clpb.yank({ regcontents = { "first" }, regtype = "v" })
+    clpb.yank({ regcontents = { "second" }, regtype = "v" })
+    vim.fn.setreg("+", { "second" }, "v")
+    clpb.paste()
+    clpb.prev()
+
+    clpb.next()
+
+    local ns_id = vim.api.nvim_get_namespaces()["clpb"]
+    local marks = vim.api.nvim_buf_get_extmarks(0, ns_id, 0, -1, {})
+    assert.equal(1, #marks)
   end)
 end)

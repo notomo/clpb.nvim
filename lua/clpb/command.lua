@@ -3,6 +3,7 @@ local M = {}
 local history = {}
 local cursor = 0
 local pasted = false
+local ns = vim.api.nvim_create_namespace("clpb")
 
 local function put_type(regtype)
   if regtype == "V" then
@@ -11,6 +12,24 @@ local function put_type(regtype)
     return "b"
   end
   return "c"
+end
+
+local function set_highlight(bufnr)
+  local start_pos = vim.fn.getpos("'[")
+  local end_pos = vim.fn.getpos("']")
+  vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+  vim.api.nvim_buf_set_extmark(bufnr, ns, start_pos[2] - 1, start_pos[3] - 1, {
+    end_row = end_pos[2] - 1,
+    end_col = end_pos[3],
+    hl_group = "IncSearch",
+  })
+  vim.api.nvim_create_autocmd("CursorMoved", {
+    buffer = bufnr,
+    once = true,
+    callback = function()
+      vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+    end,
+  })
 end
 
 function M.yank(event)
@@ -28,8 +47,9 @@ function M.paste()
   if cursor == 0 or #history == 0 then
     return
   end
-  local item = history[cursor]
-  vim.api.nvim_put(item.lines, put_type(item.regtype), true, true)
+  local bufnr = vim.api.nvim_get_current_buf()
+  vim.cmd('normal! "+p')
+  set_highlight(bufnr)
   pasted = true
 end
 
@@ -43,7 +63,11 @@ function M.prev()
   vim.cmd("silent! undo")
   pasted = false
   cursor = cursor - 1
-  M.paste()
+  local item = history[cursor]
+  local bufnr = vim.api.nvim_get_current_buf()
+  vim.api.nvim_put(item.lines, put_type(item.regtype), true, true)
+  set_highlight(bufnr)
+  pasted = true
 end
 
 function M.next()
@@ -56,7 +80,11 @@ function M.next()
   vim.cmd("silent! undo")
   pasted = false
   cursor = cursor + 1
-  M.paste()
+  local item = history[cursor]
+  local bufnr = vim.api.nvim_get_current_buf()
+  vim.api.nvim_put(item.lines, put_type(item.regtype), true, true)
+  set_highlight(bufnr)
+  pasted = true
 end
 
 function M.list()
