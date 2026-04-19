@@ -38,10 +38,6 @@ end
 
 function M.yank(event)
   local lines = event.regcontents
-  if #lines == 0 then
-    return
-  end
-
   table.insert(history, { lines = lines, regtype = event.regtype })
   if #history > max_history then
     table.remove(history, 1)
@@ -51,11 +47,13 @@ end
 
 function M.paste()
   cursor = #history
-  local bufnr = vim.api.nvim_get_current_buf()
+
   -- Use + register to support content copied from external applications
   local lines = vim.fn.getreg("+", 1, true)
   local regtype = vim.fn.getregtype("+")
   vim.api.nvim_put(lines, put_type(regtype), true, false)
+
+  local bufnr = vim.api.nvim_get_current_buf()
   set_highlight(bufnr)
 end
 
@@ -71,9 +69,10 @@ local function cycle(offset)
   elseif next_cursor > #history then
     next_cursor = 1
   end
+  cursor = next_cursor
 
   vim.cmd.undo({ mods = { silent = true } })
-  cursor = next_cursor
+
   local item = history[cursor]
   vim.api.nvim_put(item.lines, put_type(item.regtype), true, false)
   set_highlight(bufnr)
