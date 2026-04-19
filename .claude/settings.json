@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command' | grep -q '^git commit' && make test",
+            "timeout": 120,
+            "statusMessage": "Running make test..."
+          }
+        ]
+      }
+    ]
+  }
+}
