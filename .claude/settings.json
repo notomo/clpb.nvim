@@ -9,7 +9,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.command' | grep -q '^git commit' && make test",
+            "command": "cmd=$(jq -r '.tool_input.command'); echo \"$cmd\" | grep -q '^git commit' || exit 0; make test || echo '{\"continue\": false, \"stopReason\": \"make test failed\"}'",
             "timeout": 120,
             "statusMessage": "Running make test..."
           }
