@@ -5,25 +5,27 @@ local cursor = 0
 local ns = vim.api.nvim_create_namespace("clpb")
 local max_history = 20
 
-local function put_type(regtype)
-  if regtype == "V" then
-    return "l"
-  elseif regtype:sub(1, 1) == "\22" then
-    return "b"
+function M.yank(event)
+  local lines = event.regcontents
+  table.insert(history, { lines = lines, regtype = event.regtype })
+  if #history > max_history then
+    table.remove(history, 1)
   end
-  return "c"
+  cursor = #history
 end
 
 local function set_highlight(bufnr)
+  vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+
   local start_pos = vim.fn.getpos("'[")
   local end_pos = vim.fn.getpos("']")
-  local group = vim.api.nvim_create_augroup("clpb", {})
-  vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
   vim.api.nvim_buf_set_extmark(bufnr, ns, start_pos[2] - 1, start_pos[3] - 1, {
     end_row = end_pos[2] - 1,
     end_col = end_pos[3],
     hl_group = "ClpbPasted",
   })
+
+  local group = vim.api.nvim_create_augroup("clpb", {})
   vim.schedule(function()
     vim.api.nvim_create_autocmd("CursorMoved", {
       group = group,
@@ -36,25 +38,20 @@ local function set_highlight(bufnr)
   end)
 end
 
-function M.yank(event)
-  local lines = event.regcontents
-  table.insert(history, { lines = lines, regtype = event.regtype })
-  if #history > max_history then
-    table.remove(history, 1)
-  end
+function M.on_pasted()
   cursor = #history
-end
-
-function M.paste()
-  cursor = #history
-
-  -- Use + register to support content copied from external applications
-  local lines = vim.fn.getreg("+", 1, true)
-  local regtype = vim.fn.getregtype("+")
-  vim.api.nvim_put(lines, put_type(regtype), true, false)
 
   local bufnr = vim.api.nvim_get_current_buf()
   set_highlight(bufnr)
+end
+
+local function put_type(regtype)
+  if regtype == "V" then
+    return "l"
+  elseif regtype:sub(1, 1) == "\22" then
+    return "b"
+  end
+  return "c"
 end
 
 local function cycle(offset)

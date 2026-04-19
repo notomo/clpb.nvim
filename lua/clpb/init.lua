@@ -10,9 +10,9 @@ function M.yank(event)
   require("clpb.command").yank(event)
 end
 
---- Paste the current history item after cursor.
-function M.paste()
-  require("clpb.command").paste()
+--- Call after pasting to enable prev/next cycling.
+function M.on_pasted()
+  require("clpb.command").on_pasted()
 end
 
 --- Replace last paste with the previous history item.
