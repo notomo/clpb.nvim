@@ -1,4 +1,7 @@
 {
+  "sandbox": {
+    "excludedCommands": ["make", "vusted"]
+  },
   "hooks": {
     "PreToolUse": [
       {

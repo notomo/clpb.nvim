@@ -2,7 +2,6 @@ local M = {}
 
 local history = {}
 local cursor = 0
-local pasted = false
 local ns = vim.api.nvim_create_namespace("clpb")
 
 local function put_type(regtype)
@@ -42,9 +41,9 @@ function M.yank(event)
   if not lines or #lines == 0 then
     return
   end
+
   table.insert(history, { lines = lines, regtype = event.regtype })
   cursor = #history
-  pasted = false
 end
 
 function M.paste()
@@ -54,25 +53,24 @@ function M.paste()
   local regtype = vim.fn.getregtype("+")
   vim.api.nvim_put(lines, put_type(regtype), true, false)
   set_highlight(bufnr)
-  pasted = true
 end
 
 local function cycle(offset)
-  if not pasted then
+  local bufnr = vim.api.nvim_get_current_buf()
+  if #vim.api.nvim_buf_get_extmarks(bufnr, ns, 0, -1, { limit = 1 }) == 0 then
     return
   end
+
   local next_cursor = cursor + offset
   if next_cursor < 1 or next_cursor > #history then
     return
   end
+
   vim.cmd("silent! undo")
-  pasted = false
   cursor = next_cursor
   local item = history[cursor]
-  local bufnr = vim.api.nvim_get_current_buf()
   vim.api.nvim_put(item.lines, put_type(item.regtype), true, false)
   set_highlight(bufnr)
-  pasted = true
 end
 
 function M.prev()
