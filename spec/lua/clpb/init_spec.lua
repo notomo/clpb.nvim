@@ -2,6 +2,23 @@ local helper = require("clpb.test.helper")
 local clpb = helper.require("clpb")
 local assert = require("assertlib").typed(assert)
 
+describe("clpb.yank()", function()
+  before_each(helper.before_each)
+  after_each(helper.after_each)
+
+  it("limits history to 20 items", function()
+    for i = 1, 21 do
+      clpb.yank({ regcontents = { tostring(i) }, regtype = "v" })
+    end
+
+    local got = clpb.list()
+
+    assert.equal(20, #got)
+    assert.same({ "21" }, got[1].lines)
+    assert.same({ "2" }, got[20].lines)
+  end)
+end)
+
 describe("clpb.list()", function()
   before_each(helper.before_each)
   after_each(helper.after_each)
@@ -90,6 +107,23 @@ describe("clpb.paste()", function()
     assert.equal(1, #marks)
   end)
 
+  it("resets cursor so subsequent prev starts from latest", function()
+    clpb.yank({ regcontents = { "first" }, regtype = "v" })
+    clpb.yank({ regcontents = { "second" }, regtype = "v" })
+    vim.fn.setreg("+", { "second" }, "v")
+    clpb.paste()
+    clpb.prev()
+    vim.fn.setreg("+", { "external" }, "v")
+    clpb.paste()
+
+    -- without reset: cursor stays at 1, prev wraps to 2 = "second"
+    -- with reset: cursor=2, prev goes to 1 = "first"
+    clpb.prev()
+
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    assert.same({ "first" }, lines)
+  end)
+
   it("clears highlight on CursorMoved", function()
     clpb.yank({ regcontents = { "hello" }, regtype = "v" })
     vim.fn.setreg("+", { "hello" }, "v")
@@ -115,15 +149,17 @@ describe("clpb.prev()", function()
     assert.same({ "" }, lines)
   end)
 
-  it("does nothing when already at the oldest item", function()
-    clpb.yank({ regcontents = { "only" }, regtype = "v" })
-    vim.fn.setreg("+", { "only" }, "v")
+  it("wraps to newest when prev at oldest item", function()
+    clpb.yank({ regcontents = { "first" }, regtype = "v" })
+    clpb.yank({ regcontents = { "second" }, regtype = "v" })
+    vim.fn.setreg("+", { "second" }, "v")
     clpb.paste()
+    clpb.prev()
 
     clpb.prev()
 
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    assert.same({ "only" }, lines)
+    assert.same({ "second" }, lines)
   end)
 
   it("replaces pasted text with previous history item", function()
@@ -185,15 +221,16 @@ describe("clpb.next()", function()
     assert.same({ "" }, lines)
   end)
 
-  it("does nothing when already at the newest item", function()
-    clpb.yank({ regcontents = { "only" }, regtype = "v" })
-    vim.fn.setreg("+", { "only" }, "v")
+  it("wraps to oldest when next at newest item", function()
+    clpb.yank({ regcontents = { "first" }, regtype = "v" })
+    clpb.yank({ regcontents = { "second" }, regtype = "v" })
+    vim.fn.setreg("+", { "second" }, "v")
     clpb.paste()
 
     clpb.next()
 
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    assert.same({ "only" }, lines)
+    assert.same({ "first" }, lines)
   end)
 
   it("replaces pasted text with next history item after prev", function()

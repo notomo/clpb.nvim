@@ -3,6 +3,7 @@ local M = {}
 local history = {}
 local cursor = 0
 local ns = vim.api.nvim_create_namespace("clpb")
+local max_history = 20
 
 local function put_type(regtype)
   if regtype == "V" then
@@ -42,10 +43,14 @@ function M.yank(event)
   end
 
   table.insert(history, { lines = lines, regtype = event.regtype })
+  if #history > max_history then
+    table.remove(history, 1)
+  end
   cursor = #history
 end
 
 function M.paste()
+  cursor = #history
   local bufnr = vim.api.nvim_get_current_buf()
   -- Use + register to support content copied from external applications
   local lines = vim.fn.getreg("+", 1, true)
@@ -61,8 +66,10 @@ local function cycle(offset)
   end
 
   local next_cursor = cursor + offset
-  if next_cursor < 1 or next_cursor > #history then
-    return
+  if next_cursor < 1 then
+    next_cursor = #history
+  elseif next_cursor > #history then
+    next_cursor = 1
   end
 
   vim.cmd.undo({ mods = { silent = true } })
