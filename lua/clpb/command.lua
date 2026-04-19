@@ -60,16 +60,17 @@ function M.paste()
   pasted = true
 end
 
-function M.prev()
+local function cycle(offset)
   if not pasted then
     return
   end
-  if cursor <= 1 then
+  local next_cursor = cursor + offset
+  if next_cursor < 1 or next_cursor > #history then
     return
   end
   vim.cmd("silent! undo")
   pasted = false
-  cursor = cursor - 1
+  cursor = next_cursor
   local item = history[cursor]
   local bufnr = vim.api.nvim_get_current_buf()
   vim.api.nvim_put(item.lines, put_type(item.regtype), true, false)
@@ -77,21 +78,12 @@ function M.prev()
   pasted = true
 end
 
+function M.prev()
+  cycle(-1)
+end
+
 function M.next()
-  if not pasted then
-    return
-  end
-  if cursor >= #history then
-    return
-  end
-  vim.cmd("silent! undo")
-  pasted = false
-  cursor = cursor + 1
-  local item = history[cursor]
-  local bufnr = vim.api.nvim_get_current_buf()
-  vim.api.nvim_put(item.lines, put_type(item.regtype), true, false)
-  set_highlight(bufnr)
-  pasted = true
+  cycle(1)
 end
 
 function M.list()
