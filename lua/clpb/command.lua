@@ -5,9 +5,8 @@ local cursor = 0
 local ns = vim.api.nvim_create_namespace("clpb")
 local max_history = 20
 
-function M.yank(event)
-  local lines = event.regcontents
-  table.insert(history, { lines = lines, regtype = event.regtype })
+function M.yank(item)
+  table.insert(history, item)
   if #history > max_history then
     table.remove(history, 1)
   end

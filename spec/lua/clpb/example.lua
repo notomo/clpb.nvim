@@ -1,7 +1,7 @@
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = vim.api.nvim_create_augroup("config.clpb", {}),
   callback = function()
-    require("clpb").yank(vim.v.event)
+    require("clpb").yank({ lines = vim.v.event.regcontents, regtype = vim.v.event.regtype })
   end,
 })
 

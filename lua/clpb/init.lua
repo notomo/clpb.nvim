@@ -5,9 +5,9 @@ local M = {}
 --- @field regtype string register type |getregtype()|
 
 --- Save yanked text to history.
---- @param event {regcontents:string[],regtype:string}
-function M.yank(event)
-  require("clpb.command").yank(event)
+--- @param item ClpbItem |ClpbItem|
+function M.yank(item)
+  require("clpb.command").yank(item)
 end
 
 --- Call after pasting to enable prev/next cycling.

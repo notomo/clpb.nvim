@@ -3,11 +3,11 @@
 ==============================================================================
 Lua module: clpb                                              *clpb.nvim-clpb*
 
-yank({event})                                                    *clpb.yank()*
+yank({item})                                                     *clpb.yank()*
   Save yanked text to history.
 
   Parameters: ~
-    {event} ({regcontents:string[],regtype:string}) 
+    {item} (ClpbItem) |ClpbItem|
 
 on_pasted()                                                 *clpb.on_pasted()*
   Call after pasting to enable prev/next cycling.
@@ -39,7 +39,7 @@ EXAMPLES                                                  *clpb.nvim-EXAMPLES*
   vim.api.nvim_create_autocmd("TextYankPost", {
     group = vim.api.nvim_create_augroup("config.clpb", {}),
     callback = function()
-      require("clpb").yank(vim.v.event)
+      require("clpb").yank({ lines = vim.v.event.regcontents, regtype = vim.v.event.regtype })
     end,
   })
 
