@@ -31,6 +31,20 @@ require("genvdoc").generate(full_plugin_name, {
       end,
     },
     {
+      name = "HIGHLIGHT GROUPS",
+      body = function(ctx)
+        local sections = vim
+          .iter(util.extract_documented_table("./lua/clpb/highlight_group.lua"))
+          :map(function(hl_group)
+            return util.help_tagged(ctx, hl_group.key, "hl-" .. hl_group.key)
+              .. util.indent(hl_group.document, 2)
+              .. "\n"
+          end)
+          :totable()
+        return vim.trim(table.concat(sections, "\n"))
+      end,
+    },
+    {
       name = "EXAMPLES",
       body = function()
         return util.help_code_block_from_file(example_path, { language = "lua" })

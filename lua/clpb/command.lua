@@ -1,3 +1,5 @@
+local hl_groups = require("clpb.highlight_group")
+
 local M = {}
 
 local history = {}
@@ -21,7 +23,7 @@ local function set_highlight(bufnr)
   vim.api.nvim_buf_set_extmark(bufnr, ns, start_pos[2] - 1, start_pos[3] - 1, {
     end_row = end_pos[2] - 1,
     end_col = end_pos[3],
-    hl_group = "ClpbPasted",
+    hl_group = hl_groups.ClpbPasted,
     strict = false,
   })
 

@@ -33,6 +33,12 @@ ClpbItem                                                            *ClpbItem*
 - {regtype} (string) register type |getregtype()|
 
 ==============================================================================
+HIGHLIGHT GROUPS                                  *clpb.nvim-HIGHLIGHT-GROUPS*
+
+ClpbPasted                                                     *hl-ClpbPasted*
+  used for pasted region highlight
+
+==============================================================================
 EXAMPLES                                                  *clpb.nvim-EXAMPLES*
 
 >lua
