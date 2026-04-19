@@ -2,9 +2,9 @@ local M = {}
 
 --- @class ClpbItem
 --- @field lines string[] yanked text lines
---- @field regtype string register type ('v'=charwise, 'V'=linewise, block=blockwise)
+--- @field regtype string register type |getregtype()|
 
---- Save yanked text to history. Call inside |TextYankPost| autocmd.
+--- Save yanked text to history.
 --- @param event {regcontents: string[], regtype: string}?
 function M.yank(event)
   require("clpb.command").yank(event)
@@ -26,7 +26,7 @@ function M.next()
 end
 
 --- Return the yank history.
---- @return ClpbItem[]
+--- @return ClpbItem[] |ClpbItem|
 function M.list()
   return require("clpb.command").list()
 end

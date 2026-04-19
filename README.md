@@ -6,6 +6,7 @@ Manage yank history and cycle through it after pasting.
 
 ```lua
 vim.api.nvim_create_autocmd("TextYankPost", {
+  group = vim.api.nvim_create_augroup("config.clpb", {}),
   callback = function()
     require("clpb").yank(vim.v.event)
   end,

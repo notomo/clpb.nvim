@@ -4,7 +4,7 @@
 Lua module: clpb                                              *clpb.nvim-clpb*
 
 yank({event})                                                    *clpb.yank()*
-  Save yanked text to history. Call inside |TextYankPost| autocmd.
+  Save yanked text to history.
 
   Parameters: ~
     {event} ({regcontents) string[], regtype: string}?
@@ -22,13 +22,22 @@ list()                                                           *clpb.list()*
   Return the yank history.
 
   Return: ~
-    (ClpbItem[]) 
+    (ClpbItem[]) |ClpbItem|
+
+==============================================================================
+STRUCTURE                                                *clpb.nvim-STRUCTURE*
+
+ClpbItem                                                            *ClpbItem*
+
+- {lines} (string[]) yanked text lines
+- {regtype} (string) register type |getregtype()|
 
 ==============================================================================
 EXAMPLES                                                  *clpb.nvim-EXAMPLES*
 
 >lua
   vim.api.nvim_create_autocmd("TextYankPost", {
+    group = vim.api.nvim_create_augroup("config.clpb", {}),
     callback = function()
       require("clpb").yank(vim.v.event)
     end,

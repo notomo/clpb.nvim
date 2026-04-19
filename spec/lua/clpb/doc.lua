@@ -22,6 +22,15 @@ require("genvdoc").generate(full_plugin_name, {
       end,
     },
     {
+      name = "STRUCTURE",
+      group = function(node)
+        if node.declaration == nil or node.declaration.type ~= "class" then
+          return nil
+        end
+        return "STRUCTURE"
+      end,
+    },
+    {
       name = "EXAMPLES",
       body = function()
         return util.help_code_block_from_file(example_path, { language = "lua" })
