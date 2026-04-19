@@ -23,6 +23,7 @@ local function set_highlight(bufnr)
     end_row = end_pos[2] - 1,
     end_col = end_pos[3],
     hl_group = "ClpbPasted",
+    strict = false,
   })
 
   local group = vim.api.nvim_create_augroup("clpb", {})
