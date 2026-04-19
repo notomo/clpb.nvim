@@ -5,7 +5,7 @@ local M = {}
 --- @field regtype string register type |getregtype()|
 
 --- Save yanked text to history.
---- @param event {regcontents: string[], regtype: string}?
+--- @param event {regcontents:string[],regtype:string}
 function M.yank(event)
   require("clpb.command").yank(event)
 end

@@ -7,7 +7,7 @@ yank({event})                                                    *clpb.yank()*
   Save yanked text to history.
 
   Parameters: ~
-    {event} ({regcontents) string[], regtype: string}?
+    {event} ({regcontents:string[],regtype:string}) 
 
 paste()                                                         *clpb.paste()*
   Paste the current history item after cursor.

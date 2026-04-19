@@ -36,9 +36,8 @@ local function set_highlight(bufnr)
 end
 
 function M.yank(event)
-  event = event or vim.v.event
   local lines = event.regcontents
-  if not lines or #lines == 0 then
+  if #lines == 0 then
     return
   end
 
