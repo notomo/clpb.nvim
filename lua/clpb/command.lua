@@ -48,9 +48,6 @@ function M.yank(event)
 end
 
 function M.paste()
-  if cursor == 0 or #history == 0 then
-    return
-  end
   local bufnr = vim.api.nvim_get_current_buf()
   -- Use + register to support content copied from external applications
   local lines = vim.fn.getreg("+", 1, true)

@@ -28,11 +28,13 @@ describe("clpb.paste()", function()
   before_each(helper.before_each)
   after_each(helper.after_each)
 
-  it("does nothing when history is empty", function()
+  it("pastes from + register even when history is empty", function()
+    vim.fn.setreg("+", { "hello" }, "v")
+
     clpb.paste()
 
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    assert.same({ "" }, lines)
+    assert.same({ "hello" }, lines)
   end)
 
   it("inserts charwise yanked text into buffer", function()
