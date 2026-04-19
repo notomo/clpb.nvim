@@ -66,7 +66,7 @@ local function cycle(offset)
     return
   end
 
-  vim.cmd("silent! undo")
+  vim.cmd.undo({ mods = { silent = true } })
   cursor = next_cursor
   local item = history[cursor]
   vim.api.nvim_put(item.lines, put_type(item.regtype), true, false)
