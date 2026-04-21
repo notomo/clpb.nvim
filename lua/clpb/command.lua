@@ -3,7 +3,7 @@ local hl_groups = require("clpb.highlight_group")
 local M = {}
 
 local history = {}
-local cursor = 0
+local current_index = 0
 local ns = vim.api.nvim_create_namespace("clpb")
 local max_history = 20
 
@@ -12,7 +12,7 @@ function M.yank(item)
   if #history > max_history then
     table.remove(history, 1)
   end
-  cursor = #history
+  current_index = #history
 end
 
 local function set_highlight(bufnr)
@@ -41,7 +41,7 @@ local function set_highlight(bufnr)
 end
 
 function M.on_pasted()
-  cursor = #history
+  current_index = #history
 
   local bufnr = vim.api.nvim_get_current_buf()
   set_highlight(bufnr)
@@ -62,17 +62,17 @@ local function cycle(offset)
     return
   end
 
-  local next_cursor = cursor + offset
-  if next_cursor < 1 then
-    next_cursor = #history
-  elseif next_cursor > #history then
-    next_cursor = 1
+  local next_index = current_index + offset
+  if next_index < 1 then
+    next_index = #history
+  elseif next_index > #history then
+    next_index = 1
   end
-  cursor = next_cursor
+  current_index = next_index
 
   vim.cmd.undo({ mods = { silent = true } })
 
-  local item = history[cursor]
+  local item = history[current_index]
   vim.api.nvim_put(item.lines, put_type(item.regtype), true, false)
   set_highlight(bufnr)
 end
