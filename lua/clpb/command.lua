@@ -62,6 +62,10 @@ local function cycle(offset)
     return
   end
 
+  if #history == 0 then
+    return
+  end
+
   local next_index = current_index + offset
   if next_index < 1 then
     next_index = #history

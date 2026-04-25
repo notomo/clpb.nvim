@@ -98,6 +98,16 @@ describe("clpb.prev()", function()
     assert.same({ "" }, lines)
   end)
 
+  it("does nothing when history is empty even if extmark exists", function()
+    vim.api.nvim_put({ "external" }, "c", true, false)
+    clpb.on_pasted()
+
+    clpb.prev()
+
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    assert.same({ "external" }, lines)
+  end)
+
   it("wraps to newest when prev at oldest item", function()
     clpb.yank({ lines = { "first" }, regtype = "v" })
     clpb.yank({ lines = { "second" }, regtype = "v" })

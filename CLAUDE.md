@@ -18,6 +18,8 @@ make doc
 make check
 ```
 
+`make` and `vusted` are allowed to run outside the sandbox.
+
 `make test` clones deps into `spec/.shared/packages/` on first run.
 
 ## Architecture
