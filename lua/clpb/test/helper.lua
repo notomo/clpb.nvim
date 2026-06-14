@@ -1,9 +1,9 @@
-local helper = require("vusted.helper")
+local helper = require("ntf.helper")
 local plugin_name = helper.get_module_root(...)
 
 helper.root = helper.find_plugin_root(plugin_name)
 vim.opt.packpath:prepend(vim.fs.joinpath(helper.root, "spec/.shared/packages"))
-require("assertlib").register(require("vusted.assert").register)
+require("assertlib").register(require("ntf.assert").register)
 
 function helper.before_each()
   vim.g.clipboard = helper.clipboard()
@@ -11,8 +11,14 @@ end
 
 function helper.after_each()
   vim.g.clipboard = nil
-  helper.cleanup()
-  helper.cleanup_loaded_modules(plugin_name)
+end
+
+-- Emulate a paste. `nvim_put()` neither inserts into a pristine empty buffer nor
+-- sets the `'[`/`']` change marks that on_pasted() reads, so paste via `p`, which
+-- does both.
+function helper.put(lines)
+  vim.fn.setreg('"', lines, "c")
+  vim.cmd("normal! p")
 end
 
 function helper.clipboard()
