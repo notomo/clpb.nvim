@@ -21,6 +21,11 @@ function helper.put(lines)
   vim.cmd("normal! p")
 end
 
+function helper.marks(bufnr)
+  local ns_id = vim.api.nvim_get_namespaces()["clpb"]
+  return vim.api.nvim_buf_get_extmarks(bufnr, ns_id, 0, -1, {})
+end
+
 function helper.clipboard()
   local register = {}
   return {

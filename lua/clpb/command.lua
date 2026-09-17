@@ -5,6 +5,7 @@ local M = {}
 local history = {}
 local current_index = 0
 local ns = vim.api.nvim_create_namespace("clpb")
+local group = vim.api.nvim_create_augroup("clpb", {})
 local max_history = 20
 
 function M.yank(item)
@@ -15,8 +16,13 @@ function M.yank(item)
   current_index = #history
 end
 
-local function set_highlight(bufnr)
+local function clear_highlight(bufnr)
   vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+  vim.api.nvim_clear_autocmds({ group = group, buffer = bufnr })
+end
+
+local function set_highlight(bufnr)
+  clear_highlight(bufnr)
 
   local start_pos = vim.fn.getpos("'[")
   local end_pos = vim.fn.getpos("']")
@@ -27,20 +33,31 @@ local function set_highlight(bufnr)
     strict = false,
   })
 
-  local group = vim.api.nvim_create_augroup("clpb", {})
-  vim.schedule(function()
-    vim.api.nvim_create_autocmd("CursorMoved", {
-      group = group,
-      buffer = bufnr,
-      once = true,
-      callback = function()
-        vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
-      end,
-    })
-  end)
+  local pasted_cursor = vim.api.nvim_win_get_cursor(0)
+  vim.api.nvim_create_autocmd("CursorMoved", {
+    group = group,
+    buffer = bufnr,
+    callback = function()
+      if vim.deep_equal(vim.api.nvim_win_get_cursor(0), pasted_cursor) then
+        return
+      end
+      clear_highlight(bufnr)
+    end,
+  })
+  vim.api.nvim_create_autocmd({ "BufLeave", "WinLeave" }, {
+    group = group,
+    buffer = bufnr,
+    callback = function()
+      clear_highlight(bufnr)
+    end,
+  })
 end
 
+local cycling = false
 function M.on_pasted()
+  if cycling then
+    return
+  end
   current_index = #history
 
   local bufnr = vim.api.nvim_get_current_buf()
@@ -77,7 +94,12 @@ local function cycle(offset)
   vim.cmd.undo({ mods = { silent = true } })
 
   local item = history[current_index]
-  vim.api.nvim_put(item.lines, put_type(item.regtype), true, false)
+  cycling = true
+  local ok, err = pcall(vim.api.nvim_put, item.lines, put_type(item.regtype), true, false)
+  cycling = false
+  if not ok then
+    error(err, 0)
+  end
   set_highlight(bufnr)
 end
 

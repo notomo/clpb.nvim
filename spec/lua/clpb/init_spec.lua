@@ -80,12 +80,84 @@ describe("clpb.on_pasted()", function()
     helper.put({ "hello" })
     clpb.on_pasted()
 
-    vim.wait(0)
+    vim.cmd("normal! 0")
     vim.api.nvim_exec_autocmds("CursorMoved", { buffer = 0 })
 
-    local ns_id = vim.api.nvim_get_namespaces()["clpb"]
-    local marks = vim.api.nvim_buf_get_extmarks(0, ns_id, 0, -1, {})
-    assert.same({}, marks)
+    assert.same({}, helper.marks(0))
+  end)
+
+  it("keeps highlight on the CursorMoved triggered by the paste itself", function()
+    clpb.yank({ lines = { "hello" }, regtype = "v" })
+    helper.put({ "hello" })
+    clpb.on_pasted()
+
+    vim.api.nvim_exec_autocmds("CursorMoved", { buffer = 0 })
+
+    assert.equal(1, #helper.marks(0))
+  end)
+
+  it("clears highlight on BufLeave", function()
+    clpb.yank({ lines = { "hello" }, regtype = "v" })
+    helper.put({ "hello" })
+    clpb.on_pasted()
+    local bufnr = vim.api.nvim_get_current_buf()
+
+    vim.cmd("enew")
+
+    assert.same({}, helper.marks(bufnr))
+  end)
+
+  it("clears highlight on WinLeave", function()
+    clpb.yank({ lines = { "hello" }, regtype = "v" })
+    helper.put({ "hello" })
+    clpb.on_pasted()
+    local bufnr = vim.api.nvim_get_current_buf()
+
+    vim.cmd("vsplit")
+    vim.cmd("wincmd p")
+
+    assert.same({}, helper.marks(bufnr))
+  end)
+
+  it("still clears highlight after a paste in another buffer", function()
+    clpb.yank({ lines = { "hello" }, regtype = "v" })
+    helper.put({ "hello" })
+    clpb.on_pasted()
+    local bufnr = vim.api.nvim_get_current_buf()
+    vim.api.nvim_buf_clear_namespace(bufnr, vim.api.nvim_get_namespaces()["clpb"], 0, -1)
+    -- re-highlight without leaving, then paste elsewhere
+    clpb.on_pasted()
+
+    vim.cmd("noautocmd enew")
+    helper.put({ "hello" })
+    clpb.on_pasted()
+    vim.cmd("noautocmd buffer " .. bufnr)
+    vim.cmd("normal! 0")
+    vim.api.nvim_exec_autocmds("CursorMoved", { buffer = bufnr })
+
+    assert.same({}, helper.marks(bufnr))
+  end)
+
+  it("is ignored when triggered by prev/next via TextPutPost", function()
+    clpb.yank({ lines = { "first" }, regtype = "v" })
+    clpb.yank({ lines = { "second" }, regtype = "v" })
+    clpb.yank({ lines = { "third" }, regtype = "v" })
+    helper.put({ "third" })
+    clpb.on_pasted()
+    local group = vim.api.nvim_create_augroup("clpb_test", {})
+    vim.api.nvim_create_autocmd("TextPutPost", {
+      group = group,
+      callback = function()
+        clpb.on_pasted()
+      end,
+    })
+
+    clpb.prev()
+    clpb.prev()
+
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    assert.same({ "first" }, lines)
+    vim.api.nvim_del_augroup_by_id(group)
   end)
 end)
 
