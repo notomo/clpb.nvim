@@ -1,6 +1,4 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# clpb.nvim
 
 ## Commands
 
@@ -9,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 make test
 
 # Run a single spec file
-vusted --shuffle spec/lua/clpb/init_spec.lua
+make test SPEC_DIR=spec/lua/clpb/init_spec.lua
 
 # Generate docs
 make doc
@@ -17,8 +15,6 @@ make doc
 # Type check with lua-language-server
 make check
 ```
-
-`make` and `vusted` are allowed to run outside the sandbox.
 
 `make test` clones deps into `spec/.shared/packages/` on first run.
 
@@ -29,4 +25,4 @@ make check
 - `lua/clpb/init.lua` — public API; thin wrappers that lazy-require `clpb.command`
 - `lua/clpb/command.lua` — all state and logic
 
-Tests use [vusted](https://github.com/notomo/vusted) (busted runner for Neovim) and [assertlib.nvim](https://github.com/notomo/assertlib.nvim). The helper (`lua/clpb/test/helper.lua`) installs a fake in-memory clipboard provider via `vim.g.clipboard` to avoid slow external clipboard calls, and resets module state via `helper.cleanup_loaded_modules` between tests.
+Tests use [ntf](https://github.com/notomo/ntf) and [assertlib.nvim](https://github.com/notomo/assertlib.nvim). The helper (`lua/clpb/test/helper.lua`) installs a fake in-memory clipboard provider via `vim.g.clipboard` in `before_each` to avoid slow external clipboard calls.
