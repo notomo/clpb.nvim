@@ -2,7 +2,7 @@ local util = require("genvdoc.util")
 local plugin_name = vim.env.PLUGIN_NAME
 local full_plugin_name = plugin_name .. ".nvim"
 
-vim.opt.runtimepath:prepend(vim.fn.getcwd())
+vim.api.nvim_set_option_value("runtimepath", vim.fn.getcwd(), { operation = "prepend" })
 
 local example_path = ("./spec/lua/%s/example.lua"):format(plugin_name)
 dofile(example_path)
